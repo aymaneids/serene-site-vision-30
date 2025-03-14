@@ -1,39 +1,73 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { CalendarIcon } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
+import { Calendar, Users, Bed } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export const Booking = () => {
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
-  const [suite, setSuite] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [formData, setFormData] = useState({
+    checkIn: '',
+    checkOut: '',
+    adults: 2,
+    children: 0,
+    suiteType: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const parsedValue = name === 'adults' || name === 'children' ? parseInt(value) : value;
+    setFormData(prev => ({ ...prev, [name]: parsedValue }));
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate booking check
+    // Validation
+    const today = new Date();
+    const checkInDate = new Date(formData.checkIn);
+    const checkOutDate = new Date(formData.checkOut);
+    
+    if (checkInDate < today) {
+      toast({
+        title: "Invalid Check-in Date",
+        description: "Check-in date cannot be in the past.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (checkOutDate <= checkInDate) {
+      toast({
+        title: "Invalid Check-out Date",
+        description: "Check-out date must be after check-in date.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // Simulate booking request
     setTimeout(() => {
       toast({
-        title: "Booking Request Received",
-        description: "Thank you for your reservation request. We'll contact you shortly to confirm availability.",
-        duration: 6000,
+        title: "Booking Request Received!",
+        description: "We'll confirm your reservation shortly via email.",
+      });
+      
+      setFormData({
+        checkIn: '',
+        checkOut: '',
+        adults: 2,
+        children: 0,
+        suiteType: ''
       });
       
       setIsSubmitting(false);
     }, 1500);
   };
-  
-  // Calculate minimum check-out date (day after check-in)
-  const minCheckOutDate = checkIn ? new Date(new Date(checkIn).getTime() + 86400000).toISOString().split('T')[0] : '';
-  
-  // Calculate today's date for min attribute
-  const today = new Date().toISOString().split('T')[0];
   
   useEffect(() => {
     const handleScroll = () => {
@@ -43,7 +77,7 @@ export const Booking = () => {
       const sectionTop = section.getBoundingClientRect().top;
       const windowHeight = window.innerHeight;
       
-      if (sectionTop < windowHeight * 0.75) {
+      if (sectionTop < windowHeight * 0.7) {
         section.classList.add('animate-fade-in');
       }
     };
@@ -60,160 +94,134 @@ export const Booking = () => {
     <section 
       id="book" 
       ref={sectionRef}
-      className="relative py-20 md:py-32 bg-gradient-to-b from-secondary to-cream opacity-0"
+      className="relative py-20 md:py-32 bg-charcoal text-white opacity-0"
     >
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596178060810-72c5b27ef5a5?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center bg-fixed opacity-10" aria-hidden="true"></div>
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974&auto=format&fit=crop')] bg-cover bg-center opacity-20"></div>
       
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-12 md:mb-16">
-          <span className="inline-block text-sm text-gold uppercase tracking-wider font-medium mb-2">Reserve Now</span>
+        <div className="text-center mb-12">
+          <span className="inline-block text-sm text-gold uppercase tracking-wider font-medium mb-2">Reserve Your Stay</span>
           <h2 className="text-3xl md:text-4xl font-serif font-medium mb-4">
-            Book Your Stay
+            Book Your Suite
           </h2>
           <div className="w-20 h-1 bg-gold mx-auto mb-6"></div>
-          <p className="text-base md:text-lg max-w-2xl mx-auto text-charcoal/80">
-            Experience the perfect blend of historic charm and modern luxury in the heart of Vienna.
+          <p className="text-base md:text-lg max-w-2xl mx-auto text-white/80">
+            Experience luxury in the heart of Vienna. Book your stay directly for the best rates and exclusive amenities.
           </p>
         </div>
         
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <form onSubmit={handleSubmit} className="p-6 md:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                {/* Check-in Date */}
-                <div className="relative">
-                  <label htmlFor="check-in" className="block text-sm font-medium mb-1">
-                    Check-in Date
-                  </label>
-                  <div className="relative">
-                    <input 
-                      type="date" 
-                      id="check-in"
-                      value={checkIn}
-                      onChange={(e) => setCheckIn(e.target.value)}
-                      min={today}
-                      className="w-full px-4 py-2 pl-10 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold"
-                      required
-                    />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/60">
-                      <CalendarIcon size={16} />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Check-out Date */}
-                <div className="relative">
-                  <label htmlFor="check-out" className="block text-sm font-medium mb-1">
-                    Check-out Date
-                  </label>
-                  <div className="relative">
-                    <input 
-                      type="date" 
-                      id="check-out"
-                      value={checkOut}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      min={minCheckOutDate || today}
-                      disabled={!checkIn}
-                      className="w-full px-4 py-2 pl-10 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold disabled:opacity-60 disabled:cursor-not-allowed"
-                      required
-                    />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/60">
-                      <CalendarIcon size={16} />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Adults */}
-                <div>
-                  <label htmlFor="adults" className="block text-sm font-medium mb-1">
-                    Adults
-                  </label>
-                  <select
-                    id="adults"
-                    value={adults}
-                    onChange={(e) => setAdults(Number(e.target.value))}
-                    className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold"
-                    required
-                  >
-                    {[1, 2, 3, 4].map((num) => (
-                      <option key={num} value={num}>{num}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                {/* Children */}
-                <div>
-                  <label htmlFor="children" className="block text-sm font-medium mb-1">
-                    Children
-                  </label>
-                  <select
-                    id="children"
-                    value={children}
-                    onChange={(e) => setChildren(Number(e.target.value))}
-                    className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold"
-                  >
-                    {[0, 1, 2, 3].map((num) => (
-                      <option key={num} value={num}>{num}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                {/* Suite Selection */}
-                <div className="md:col-span-2">
-                  <label htmlFor="suite" className="block text-sm font-medium mb-1">
-                    Select Suite
-                  </label>
-                  <select
-                    id="suite"
-                    value={suite}
-                    onChange={(e) => setSuite(e.target.value)}
-                    className="w-full px-4 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold"
-                    required
-                  >
-                    <option value="" disabled>Choose a suite</option>
-                    <option value="mozart">Mozart Suite</option>
-                    <option value="klimt">Klimt Suite</option>
-                    <option value="strauss">Strauss Suite</option>
-                  </select>
-                </div>
+        <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-sm p-8 rounded-lg shadow-xl border border-white/20">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="checkIn" className="text-sm font-medium flex items-center">
+                  <Calendar size={18} className="mr-2 text-gold" />
+                  Check-in Date
+                </label>
+                <input
+                  type="date"
+                  id="checkIn"
+                  name="checkIn"
+                  value={formData.checkIn}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded text-white placeholder-white/60 focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/50"
+                  required
+                />
               </div>
               
-              <div className="mt-6">
-                <button 
-                  type="submit"
-                  className="w-full btn-hover-slide px-6 py-3 bg-gold text-white text-sm font-medium uppercase tracking-wide rounded transition-all hover:shadow-md flex items-center justify-center"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : (
-                    "Check Availability"
-                  )}
-                </button>
+              <div className="space-y-2">
+                <label htmlFor="checkOut" className="text-sm font-medium flex items-center">
+                  <Calendar size={18} className="mr-2 text-gold" />
+                  Check-out Date
+                </label>
+                <input
+                  type="date"
+                  id="checkOut"
+                  name="checkOut"
+                  value={formData.checkOut}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded text-white placeholder-white/60 focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/50"
+                  required
+                />
               </div>
-            </form>
-            
-            <div className="px-6 md:px-8 py-4 bg-cream/80">
-              <p className="text-sm text-charcoal/70">
-                By booking directly on our website, you receive the best rate guarantee and
-                complimentary welcome amenities upon arrival.
-              </p>
             </div>
-          </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="adults" className="text-sm font-medium flex items-center">
+                  <Users size={18} className="mr-2 text-gold" />
+                  Adults
+                </label>
+                <select
+                  id="adults"
+                  name="adults"
+                  value={formData.adults}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded text-white focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/50"
+                  required
+                >
+                  {[1, 2, 3, 4].map(num => (
+                    <option key={num} value={num} className="bg-charcoal text-white">
+                      {num} {num === 1 ? 'Adult' : 'Adults'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="children" className="text-sm font-medium flex items-center">
+                  <Users size={18} className="mr-2 text-gold" />
+                  Children
+                </label>
+                <select
+                  id="children"
+                  name="children"
+                  value={formData.children}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded text-white focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/50"
+                >
+                  {[0, 1, 2, 3].map(num => (
+                    <option key={num} value={num} className="bg-charcoal text-white">
+                      {num} {num === 1 ? 'Child' : 'Children'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="suiteType" className="text-sm font-medium flex items-center">
+                  <Bed size={18} className="mr-2 text-gold" />
+                  Suite Type
+                </label>
+                <select
+                  id="suiteType"
+                  name="suiteType"
+                  value={formData.suiteType}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded text-white focus:outline-none focus:ring-1 focus:ring-gold/50 focus:border-gold/50"
+                  required
+                >
+                  <option value="" disabled className="bg-charcoal text-white">Select a suite</option>
+                  <option value="mozart" className="bg-charcoal text-white">Mozart Suite</option>
+                  <option value="strauss" className="bg-charcoal text-white">Strauss Suite</option>
+                  <option value="imperial" className="bg-charcoal text-white">Imperial Suite</option>
+                </select>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full btn-hover-slide px-8 py-3 bg-gold text-white font-medium tracking-wide uppercase rounded transition-all hover:shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Processing...' : 'Check Availability'}
+            </button>
+          </form>
           
-          <div className="mt-10 text-center">
-            <p className="text-sm text-charcoal/80 mb-3">
-              For special requests or group bookings, please contact our reservations team:
-            </p>
-            <p className="text-charcoal font-medium">
-              reservations@viennasuites.com | +43 1 23456789
-            </p>
+          <div className="mt-8 pt-6 border-t border-white/20 text-white/80 text-sm text-center">
+            <p>For special requests or assistance with your booking, please contact us directly at:</p>
+            <a href="tel:+4312345678" className="text-gold hover:underline">+43 1 234 5678</a> or 
+            <a href="mailto:reservations@viennasuites.com" className="text-gold hover:underline ml-1">reservations@viennasuites.com</a>
           </div>
         </div>
       </div>

@@ -1,71 +1,57 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface Suite {
   id: number;
   name: string;
-  description: string;
   size: string;
   price: string;
-  image: string;
+  description: string;
   features: string[];
+  image: string;
 }
 
-const suites: Suite[] = [
-  {
-    id: 1,
-    name: "Mozart Suite",
-    description: "Experience the grandeur of old Vienna in our signature suite with stunning views of the city center.",
-    size: "65 m²",
-    price: "€450",
-    image: "https://images.unsplash.com/photo-1631049035182-249067d7618e?q=80&w=2070&auto=format&fit=crop",
-    features: ["King-size bed", "Separate living area", "Marble bathroom", "City view", "Complimentary minibar"]
-  },
-  {
-    id: 2,
-    name: "Klimt Suite",
-    description: "Inspired by Vienna's art nouveau movement, this luxurious suite combines artistic elegance with modern comfort.",
-    size: "55 m²",
-    price: "€380",
-    image: "https://images.unsplash.com/photo-1613977257365-aaae5a9817ff?q=80&w=1887&auto=format&fit=crop",
-    features: ["Queen-size bed", "Work desk", "Rainfall shower", "Garden view", "Nespresso machine"]
-  },
-  {
-    id: 3,
-    name: "Strauss Suite",
-    description: "Waltz into luxury in our musically-inspired suite featuring refined details and harmonious design.",
-    size: "60 m²",
-    price: "€420",
-    image: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?q=80&w=1974&auto=format&fit=crop",
-    features: ["King-size bed", "Balcony", "Freestanding bathtub", "Sound system", "Evening turndown service"]
-  }
-];
-
 export const Suites = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [animating, setAnimating] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   
-  const goToSuite = (index: number) => {
-    if (animating) return;
-    
-    setAnimating(true);
-    setActiveIndex(index);
-    
-    setTimeout(() => {
-      setAnimating(false);
-    }, 600);
+  const suites: Suite[] = [
+    {
+      id: 1,
+      name: "Mozart Suite",
+      size: "65 m²",
+      price: "€450",
+      description: "Experience the elegance of old Vienna with our Mozart Suite, featuring high ceilings, a dedicated living area, and views of the historic city center.",
+      features: ["King-sized bed", "Marble bathroom", "Living area", "City view", "Mini bar", "Smart TV"],
+      image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974&auto=format&fit=crop"
+    },
+    {
+      id: 2,
+      name: "Strauss Suite",
+      size: "80 m²",
+      price: "€590",
+      description: "Our spacious Strauss Suite offers refined luxury with a separate bedroom and living room, decorated with authentic Viennese antiques and artwork.",
+      features: ["King-sized bed", "Freestanding bathtub", "Separate living room", "Walk-in closet", "Espresso machine", "Balcony"],
+      image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?q=80&w=1971&auto=format&fit=crop"
+    },
+    {
+      id: 3,
+      name: "Imperial Suite",
+      size: "120 m²",
+      price: "€890",
+      description: "The ultimate luxury experience in the heart of Vienna, our Imperial Suite features panoramic views, a dining area, and premium amenities for distinguished guests.",
+      features: ["King-sized bed", "Two bathrooms", "Dining area", "Panoramic view", "Complimentary minibar", "Butler service"],
+      image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=2070&auto=format&fit=crop"
+    }
+  ];
+  
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % suites.length);
   };
-
-  const goToPrev = () => {
-    const newIndex = activeIndex === 0 ? suites.length - 1 : activeIndex - 1;
-    goToSuite(newIndex);
-  };
-
-  const goToNext = () => {
-    const newIndex = activeIndex === suites.length - 1 ? 0 : activeIndex + 1;
-    goToSuite(newIndex);
+  
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + suites.length) % suites.length);
   };
   
   useEffect(() => {
@@ -76,7 +62,7 @@ export const Suites = () => {
       const sectionTop = section.getBoundingClientRect().top;
       const windowHeight = window.innerHeight;
       
-      if (sectionTop < windowHeight * 0.75) {
+      if (sectionTop < windowHeight * 0.7) {
         section.classList.add('animate-fade-in');
       }
     };
@@ -96,111 +82,102 @@ export const Suites = () => {
       className="relative py-20 md:py-32 bg-white opacity-0"
     >
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12 md:mb-20">
-          <span className="inline-block text-sm text-gold uppercase tracking-wider font-medium mb-2">Accommodation</span>
+        <div className="text-center mb-16">
+          <span className="inline-block text-sm text-gold uppercase tracking-wider font-medium mb-2">Our Accommodations</span>
           <h2 className="text-3xl md:text-4xl font-serif font-medium mb-4">
-            Our Exclusive Suites
+            Luxury Suites
           </h2>
           <div className="w-20 h-1 bg-gold mx-auto mb-6"></div>
           <p className="text-base md:text-lg max-w-2xl mx-auto text-charcoal/80">
-            Each of our suites has been individually designed to provide a perfect blend of historic Viennese elegance and modern comfort.
+            Discover our meticulously designed suites that blend historic Viennese charm with modern luxury.
           </p>
         </div>
         
-        <div className="relative">
-          {/* Suite Carousel */}
-          <div className="relative overflow-hidden rounded-lg shadow-xl">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out h-[500px] md:h-[600px]"
-              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-            >
-              {suites.map((suite) => (
-                <div 
-                  key={suite.id}
-                  className="relative w-full flex-shrink-0"
-                >
-                  <div className="absolute inset-0">
+        <div className="relative overflow-hidden">
+          <div 
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
+            {suites.map((suite) => (
+              <div 
+                key={suite.id}
+                className="w-full flex-shrink-0 px-4"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+                  {/* Suite Image */}
+                  <div className="image-reveal rounded-md overflow-hidden shadow-lg order-1 lg:order-none">
                     <img 
                       src={suite.image} 
-                      alt={`${suite.name} - Vienna Suites`}
-                      className="w-full h-full object-cover"
+                      alt={`${suite.name} - Luxury accommodation at Vienna Suites`}
+                      className="w-full h-auto object-cover transition-transform duration-700 hover:scale-105"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10"></div>
                   </div>
                   
-                  <div className="relative z-10 h-full flex flex-col justify-end p-6 md:p-10">
-                    <div className="max-w-lg">
-                      <h3 className="text-2xl md:text-3xl font-serif font-medium text-white mb-2">
-                        {suite.name}
-                      </h3>
-                      <p className="text-white/90 mb-4">
-                        {suite.description}
-                      </p>
-                      <div className="flex flex-wrap gap-4 mb-6">
-                        <div className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded text-white text-sm">
-                          {suite.size}
-                        </div>
-                        <div className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded text-white text-sm">
-                          From {suite.price} per night
-                        </div>
+                  {/* Suite Content */}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-serif font-medium mb-2">{suite.name}</h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm text-charcoal/70">{suite.size}</span>
+                        <span className="text-xl text-gold font-medium">{suite.price} <span className="text-sm">per night</span></span>
                       </div>
-                      <div className="mb-6">
-                        <h4 className="text-white font-medium mb-2">Features:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {suite.features.map((feature, index) => (
-                            <span 
-                              key={index}
-                              className="inline-block px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-white text-xs"
-                            >
-                              {feature}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <a 
-                        href="#book" 
-                        className="inline-block btn-hover-slide px-6 py-2 bg-gold text-white text-sm font-medium uppercase tracking-wide rounded transition-all hover:shadow-lg"
-                      >
-                        Book This Suite
-                      </a>
+                      <p className="text-charcoal/80 mb-6">{suite.description}</p>
                     </div>
+                    
+                    {/* Features */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {suite.features.map((feature, index) => (
+                        <div 
+                          key={index}
+                          className="flex items-center text-sm text-charcoal/70"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-gold mr-2" aria-hidden="true"></span>
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <a 
+                      href="#book" 
+                      className="inline-block btn-hover-slide px-6 py-3 bg-charcoal text-white text-sm font-medium uppercase tracking-wide rounded transition-all hover:shadow-md mt-4"
+                    >
+                      Book This Suite
+                    </a>
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            {/* Navigation Arrows */}
-            <button 
-              onClick={goToPrev}
-              className="absolute top-1/2 left-4 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 transition-colors"
-              aria-label="Previous suite"
-              disabled={animating}
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button 
-              onClick={goToNext}
-              className="absolute top-1/2 right-4 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 transition-colors"
-              aria-label="Next suite"
-              disabled={animating}
-            >
-              <ChevronRight size={24} />
-            </button>
+              </div>
+            ))}
           </div>
           
-          {/* Suite Pagination */}
-          <div className="flex justify-center mt-6">
-            {suites.map((suite, index) => (
+          {/* Navigation Arrows */}
+          <button 
+            onClick={prevSlide}
+            className="absolute top-1/2 left-2 md:left-6 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors z-10"
+            aria-label="Previous suite"
+          >
+            <ArrowLeft size={20} className="text-charcoal" />
+          </button>
+          
+          <button 
+            onClick={nextSlide}
+            className="absolute top-1/2 right-2 md:right-6 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors z-10"
+            aria-label="Next suite"
+          >
+            <ArrowRight size={20} className="text-charcoal" />
+          </button>
+          
+          {/* Dots Indicators */}
+          <div className="flex justify-center mt-8 space-x-2">
+            {suites.map((_, index) => (
               <button
-                key={suite.id}
-                onClick={() => goToSuite(index)}
-                className={`w-3 h-3 mx-1 rounded-full transition-colors ${
-                  index === activeIndex ? 'bg-gold' : 'bg-taupe/40 hover:bg-taupe'
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                  index === currentIndex ? 'bg-gold' : 'bg-gold/30'
                 }`}
-                aria-label={`Go to ${suite.name}`}
-                disabled={animating}
-              ></button>
+                aria-label={`Go to suite ${index + 1}`}
+              />
             ))}
           </div>
         </div>
